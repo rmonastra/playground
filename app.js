@@ -4,12 +4,12 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require("mongoose");
 const mongodb = require('mongodb').MongoClient();
-const userDB = require("./models/userDB");
+const Exercise = require("./models/exercise");
+const User = require("./models/user");
 //const dotenv = require("dotenv").config();
-const path = require('path');
 const randomstring = require("randomstring");
 
-mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/userdbs')
+mongoose.connect( /* process.env.MONGOLAB_URI || */ 'mongodb://localhost/exercises')
 
 app.use(cors())
 
@@ -21,45 +21,33 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/views/index.html')
 });
 
+app.get("/api/exercise/users", (req, res) => {
+    User.find({}, (err, results) => {
+        res.json(results)
+    })
+})
+
 app.get("/api/exercise/log/", (req, res) => {
 
     let user = req.query.userIdGet
-    let from_date = new Date(req.query.fromDate) || 'Invalid Date'
-    let to_date = new Date(req.query.toDate) || 'Invalid Date'
-    let query_limit = parseInt(req.query.limit) || 1
 
-    userDB.findById(user, (err, doc) => {
-        if (doc) {
-            userDB.find({
-                _id: user,
-                user_name: doc.user_name,
-                exerc_date: {
-                    $lt: to_date != 'Invalid Date' ? to_date.getTime() : Date.now(),
-                    $gt: from_date != 'Invalid Date' ? from_date.getTime() : 0
-                },
-                limit: query_limit
-            })
-            res.json({
-                _id: doc._id,
-                user_name: doc.user_name,
-                exerc_desc: doc.exerc_desc,
-                exerc_dura: doc.exerc_dura,
-                exerc_date: doc.exerc_date
-            })
-        } else {
-            res.json({
-                error: "user id not found"
-            })
-        }
+
+    if (req.query.userIdGet === "") {
+        res.json({
+            error: "User Id required"
+        })
+    }
+    userDB.findById(req.query.userIdGet, (err, doc) => {
+
     })
-
 })
 
-app.post("/api/exercise/new-user/", (req, res) => {
+
+app.post("/api/exercise/new-user", (req, res) => {
     let username = req.body.username;
     let idUser = randomstring.generate(6);
 
-    userDB.findOne({ "user_name": { $eq: username } }, (err, doc) => {
+    User.findOne({ "user_name": { $eq: username } }, (err, doc) => {
 
         if (username === "") {
             res.json({
@@ -68,55 +56,55 @@ app.post("/api/exercise/new-user/", (req, res) => {
         } else if (doc) {
             return res.send('User already exists')
         } else {
-            let newUser = new userDB({
+            let newUser = new User({
                 user_name: username,
                 _id: idUser
-            });
+            })
             newUser.save((err, doc) => {
                 res.json({
                     user_name: username,
                     _id: idUser
                 })
-            });
+            })
         }
-    });
-});
+    })
+})
 
-app.post("/api/exercise/add/", (req, res) => {
-    let user = req.body.userId
 
-    userDB.findOne({ "_id": { $eq: user } }, (err, doc) => {
+app.post("/api/exercise/add/", (req, res, next) => {
 
-        if (doc) {
+    User.findById(req.body.userId, (err, doc) => {
 
-            userDB.update({
+        if (req.body.userId === "") {
+            res.json({
+                error: "User Id required"
+            })
+        } else {
 
-                /*exercises: {
-                    $each: [{ exerc_desc: req.body.description }, { exerc_dura: req.body.duration }, { exerc_date: req.body.date }]
-                }*/
+            let username = doc.user_name
+            let newExercise = new Exercise({
+                userId: req.body.userId,
+                user_name: username,
+                exerc_desc: req.body.description,
+                exerc_dura: req.body.duration,
+                exerc_date: req.body.date
+            })
 
-                exercise: [{
+            newExercise.save((err, doc) => {
+                if (err) return (err)
+                res.json({
+                    userId: req.body.userId,
+                    user_name: username,
                     exerc_desc: req.body.description,
                     exerc_dura: req.body.duration,
                     exerc_date: req.body.date
-                }]
-
-
-
-            })
-            doc.save();
-            res.json(doc)
-
-        } else {
-            res.json({
-                error: "user id not found"
+                })
             })
         }
 
-    });
+    })
 
-});
-
+})
 
 //Listen on connection port
 let port = process.env.PORT || 3000;
