@@ -36,11 +36,16 @@ app.get("/api/exercise/log/", (req, res) => {
         })
     }
     User.findById(req.query.userIdGet, (err, results) => {
-         
+        let fromDate = req.query.fromDate
+        let toDate = req.query.toDate
+        let limit = req.query.limit
+
         if (err) return console.error(err);     
         
         Exercise.find({
-            userId: req.query.userIdGet
+            userId: req.query.userIdGet/* ,
+            date: {$gt: fromDate, $lt: toDate},
+            limit: limit */
          }).exec((err, results)=>{
              if (err) return console.error(err);
              res.json(results)
