@@ -23,32 +23,38 @@ app.get('/', (req, res) => {
 
 app.get("/api/exercise/users", (req, res) => {
     User.find({}, (err, results) => {
+        if (err) return console.error(err);
         res.json(results)
     })
 })
 
 app.get("/api/exercise/log/", (req, res) => {
 
-    let user = req.query.userIdGet
-
-
     if (req.query.userIdGet === "") {
         res.json({
             error: "User Id required"
         })
     }
-    userDB.findById(req.query.userIdGet, (err, doc) => {
-
+    User.findById(req.query.userIdGet, (err, results) => {
+         
+        if (err) return console.error(err);     
+        
+        Exercise.find({
+            userId: req.query.userIdGet
+         }).exec((err, results)=>{
+             if (err) return console.error(err);
+             res.json(results)
+         })      
     })
 })
 
 
-app.post("/api/exercise/new-user", (req, res) => {
+app.post("/api/exercise/new-user/", (req, res) => {
     let username = req.body.username;
     let idUser = randomstring.generate(6);
 
     User.findOne({ "user_name": { $eq: username } }, (err, doc) => {
-
+        if (err) return console.error(err);
         if (username === "") {
             res.json({
                 error: "Username required"
@@ -61,6 +67,7 @@ app.post("/api/exercise/new-user", (req, res) => {
                 _id: idUser
             })
             newUser.save((err, doc) => {
+                if (err) return console.error(err);
                 res.json({
                     user_name: username,
                     _id: idUser
@@ -74,7 +81,7 @@ app.post("/api/exercise/new-user", (req, res) => {
 app.post("/api/exercise/add/", (req, res, next) => {
 
     User.findById(req.body.userId, (err, doc) => {
-
+ if (err) return console.error(err);
         if (req.body.userId === "") {
             res.json({
                 error: "User Id required"
@@ -91,7 +98,7 @@ app.post("/api/exercise/add/", (req, res, next) => {
             })
 
             newExercise.save((err, doc) => {
-                if (err) return (err)
+                if (err) return console.error(err);
                 res.json({
                     userId: req.body.userId,
                     user_name: username,
