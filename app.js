@@ -36,8 +36,8 @@ app.get("/api/exercise/log/", (req, res) => {
         })
     }
     User.findById(req.query.userIdGet, (err, results) => {
-        let fromDate = req.query.fromDate
-        let toDate = req.query.toDate
+        let fromDate = new Date(req.query.fromDate)
+        let toDate = new Date(req.query.toDate)
         let limit = req.query.limit
 
         if (err) return console.error(err);     
