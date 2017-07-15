@@ -36,7 +36,8 @@ app.get("/api/exercise/log/", (req, res) => {
         })
     }
     User.findById(req.query.userIdGet, (err, results) => {
-        let fromDate = new Date(req.query.fromDate) || Date.now
+        let username = results.user_name
+        let fromDate = new Date(req.query.fromDate) || fromDate.getTime()
         let toDate = new Date(req.query.toDate) || Date.now
         let limit = req.query.limit || 10
         
@@ -50,8 +51,19 @@ app.get("/api/exercise/log/", (req, res) => {
         .limit(limit)
         .sort({date: -1})
         .exec((err, data) =>{
-            res.json(data)
-        })      
+
+            res.json({
+                userId: req.query.userIdGet,
+                user_name: username,
+                count: data.length,
+                log: data.map(event => ({
+                exerc_desc : event.description,
+                exerc_dura : event.duration,
+                exerc_date: event.date.toDateString()
+          })
+        )
+            })      
+        })
     })
 })
 
@@ -124,4 +136,4 @@ app.post("/api/exercise/add/", (req, res, next) => {
 let port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log("Listening on port: " + port);
-});
+})
