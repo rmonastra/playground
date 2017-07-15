@@ -7,7 +7,8 @@ const Schema = mongoose.Schema
 
 const exerciseSchema = new Schema({
     user_name: {
-        type: String
+        type: String,
+        ref: "User"
     },
     userId: {
         type: String,
