@@ -49,7 +49,9 @@ app.get("/api/exercise/log/", (req, res) => {
          })
         .limit(limit)
         .sort({date: -1})
-        .exec()      
+        .exec((err, data) =>{
+            res.json(data)
+        })      
     })
 })
 
