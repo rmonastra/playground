@@ -41,16 +41,18 @@ app.get("/api/exercise/log/", (req, res) => {
         let toDate = new Date(req.query.toDate) || Date.now
         let limit = req.query.limit || 10
         
-        console.log(id)
         if (err) return console.error(err);     
         
         Exercise
         .find({
-            userId: req.query.userIdGet     
+            userId: req.query.userIdGet
+              
          })
-        .sort()
+        .select("-_id -__v")
+        .sort("exerc_date")
+        .limit(parseInt(req.query.limit))
         .exec((err, data) =>{
-if (err) return console.error(err);
+            if (err) return console.error(err);
             res.json(data)      
         })
     })
