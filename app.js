@@ -37,31 +37,36 @@ app.get("/api/exercise/log/", (req, res) => {
     }
     User.findById(req.query.userIdGet, (err, results) => {
         let username = results.user_name
+        let id = results._id
         let fromDate = new Date(req.query.fromDate) || fromDate.getTime()
         let toDate = new Date(req.query.toDate) || Date.now
         let limit = req.query.limit || 10
         
+        console.log(id)
         if (err) return console.error(err);     
         
         Exercise
         .find({
-            userId: req.query.userIdGet,
-            date: {$gt: fromDate, $lt: toDate}, 
+            userId: id,
+            date: {$gt: fromDate, $lt: toDate}
          })
         .limit(limit)
         .sort({date: -1})
         .exec((err, data) =>{
 
             res.json({
-                userId: req.query.userIdGet,
+                userId: id,
+            date: {$gt: fromDate, $lt: toDate},
+            exerc_date: data.fromDate
+               /*  userId: id,
                 user_name: username,
                 count: data.length,
                 log: data.map(event => ({
-                exerc_desc : event.description,
-                exerc_dura : event.duration,
-                exerc_date: event.date.toDateString()
-          })
-        )
+                exerc_desc : event.exerc_desc,
+                exerc_dura : event.exerc_dura,
+                exerc_date: event.exerc_date.toDateString() */
+         /* })
+        )*/
             })      
         })
     })
