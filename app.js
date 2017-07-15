@@ -39,16 +39,22 @@ app.get("/api/exercise/log/", (req, res) => {
         let fromDate = new Date(req.query.fromDate)
         let toDate = new Date(req.query.toDate)
         let limit = req.query.limit
-
+        
         if (err) return console.error(err);     
         
-        Exercise.find({
-            userId: req.query.userIdGet/* ,
-            date: {$gt: fromDate, $lt: toDate},
-            limit: limit */
-         }).exec((err, results)=>{
+        Exercise
+        .find({
+            userId: req.query.userIdGet,
+            date: {$gt: fromDate, $lt: toDate}, 
+         })
+        .limit(limit)
+        .sort({date: -1})
+        .exec((err, results)=>{
+            console.log(results)
              if (err) return console.error(err);
-             res.json(results)
+             results.map((results)=>{
+                 res.json(results)
+                })
          })      
     })
 })
