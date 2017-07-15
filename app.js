@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
 });
 
 app.get("/api/exercise/users", (req, res) => {
-    User.find({}, (err, results) => {
+    User.find({},{__v:0}, (err, results) => {
         if (err) return console.error(err);
         res.json(results)
     })
